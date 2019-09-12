@@ -33,7 +33,9 @@
   },
   "devDependencies": {
     "@testing-library/cypress": "^5.0.0",
+    "@testing-library/jest-dom": "^4.1.0",
     "@testing-library/react": "^9.1.4",
-    "cypress": "^3.4.1"
+    "cypress": "^3.4.1",
+    "prettier": "^1.18.2"
   }
 }
