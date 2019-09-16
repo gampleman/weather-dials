@@ -1,9 +1,13 @@
 import React from "react";
 import LocationSearch from "./LocationSearch";
+import Dial from "./Dial";
+import ProgressBar from "./ProgressBar";
 import { useDispatch, useSelector } from "react-redux";
 import { render } from "../reducer";
+import { computeDailyAverages } from "../selectors";
+import styles from "./App.module.css";
 
-function App() {
+const App = () => {
   const dispatch = useDispatch();
   const state = useSelector(state => state);
   switch (state.mode) {
@@ -12,12 +16,19 @@ function App() {
         <LocationSearch onRender={location => dispatch(render(location))} />
       );
     case "loading":
-      return <p>loading</p>;
+      return <ProgressBar progress={state.progress} />;
     case "success":
-      return <pre>{JSON.stringify(state.data, null, 2)}</pre>;
+      return <Dial data={computeDailyAverages(state)} name={state.name} />;
     case "error":
-      return <p>Something went wrong</p>;
+    default:
+      return <p>Something went wrong.</p>;
   }
-}
+};
 
-export default App;
+const StyledApp = () => (
+  <main className={styles.app}>
+    <App />
+  </main>
+);
+
+export default StyledApp;
