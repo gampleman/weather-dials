@@ -14,7 +14,32 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands'
+import "./commands";
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
+// this is needed until https://github.com/cypress-io/cypress/issues/95 is fixed
+enableFetchWorkaround();
+
+// Alternatively you can use CommonJS syntax:
+// require('./commands')
+function enableFetchWorkaround() {
+  let polyfill;
+
+  before(() => {
+    console.info("Load fetch XHR polyfill");
+    const polyfillUrl = "https://unpkg.com/unfetch/dist/unfetch.umd.js";
+    cy.request(polyfillUrl).then(response => {
+      polyfill = response.body;
+    });
+  });
+
+  Cypress.on("window:before:load", win => {
+    const origFetch = win.fetch;
+    delete win.fetch;
+    // since the application code does not ship with a polyfill
+    // load a polyfilled "fetch" from the test
+    win.eval(polyfill);
+    win.fetch = win.unfetch;
+  });
+}

@@ -1,0 +1,24 @@
+[
+  {
+    "place_id": "158043",
+    "licence": "https://locationiq.com/attribution",
+    "osm_type": "node",
+    "osm_id": "30349906",
+    "boundingbox": ["55.9021202", "55.9821202", "-3.0938516", "-3.0138516"],
+    "lat": "55.9421202",
+    "lon": "-3.0538516",
+    "display_name": "Musselburgh, East Lothian, Scotland, EH21 7DX, Gran Breta\u00f1a",
+    "class": "place",
+    "type": "town",
+    "importance": 0.52038227164934,
+    "icon": "https://locationiq.org/static/images/mapicons/poi_place_town.p.20.png",
+    "address": {
+      "town": "Musselburgh",
+      "county": "East Lothian",
+      "state": "Scotland",
+      "postcode": "EH21 7DX",
+      "country": "Gran Breta\u00f1a",
+      "country_code": "gb"
+    }
+  }
+]
