@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import styles from "./LocationSearch.module.css";
 let currentId = 0;
 
 const useId = () => {
@@ -14,15 +15,20 @@ const LocationSearch = ({ onRender }) => {
   const [value, setValue] = useState("");
   return (
     <div>
-      <label htmlFor={inputId}>City:</label>
-      <input
-        id={inputId}
-        autoFocus={true}
-        type="text"
-        value={value}
-        onChange={e => setValue(e.target.value)}
-      />
-      <button onClick={() => onRender(value)}>Render</button>
+      <h1 className={styles.header}>Make a weather dial!</h1>
+      <div className={styles.form}>
+        <label htmlFor={inputId}>City:</label>
+        <input
+          id={inputId}
+          autoFocus={true}
+          type="text"
+          value={value}
+          onChange={e => setValue(e.target.value)}
+        />
+        <button className={styles.button} onClick={() => onRender(value)}>
+          Render
+        </button>
+      </div>
     </div>
   );
 };
