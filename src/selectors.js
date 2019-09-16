@@ -1,4 +1,4 @@
-export const computeDailyAverages = data => {
+export const computeDailyAverages = ({ data }) => {
   // Step 1: Compute hourly averages:
   return (
     Object.values(

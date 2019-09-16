@@ -38,7 +38,7 @@ for (let i = 0; i < 365; i++) {
 
 describe("computeDailyAverages", () => {
   it("coalesces it to a fixed number of days", () => {
-    const result = computeDailyAverages(mockData);
+    const result = computeDailyAverages({ data: mockData });
     expect(result.length).toBe(365);
     result.forEach(day => {
       expect(day).toEqual({
