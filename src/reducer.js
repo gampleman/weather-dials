@@ -1,10 +1,10 @@
 import { createSlice } from "redux-starter-kit";
 
 const { reducer, actions } = createSlice({
-  initialState: { mode: "search" },
+  initialState: { mode: "search", data: [] },
   reducers: {
-    loading() {
-      return { mode: "loading", progress: 0, data: [] };
+    loading(state, { payload }) {
+      return { mode: "loading", progress: 0, data: [], name: payload.name };
     },
     loadedLocation(state, { payload }) {
       state.progress++;
@@ -33,31 +33,46 @@ const fetchAPI = async (...args) => {
 };
 
 export const render = location => async dispatch => {
-  dispatch(actions.loading());
+  dispatch(actions.loading({ name: location }));
 
   try {
     const locationData = await fetchAPI(
       `https://eu1.locationiq.com/v1/search.php?key=${process.env.REACT_APP_LOCATIONIQ_TOKEN}&q=${location}&format=json&addressdetails=1&limit=1`
     );
-
     dispatch(actions.loadedLocation(locationData[0]));
     const now = new Date(Date.now());
-    const before = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
-    const last10daysWeather = await fetchAPI(
-      `https://api.stormglass.io/v1/weather/point?lat=${
-        locationData[0].lat
-      }&lng=${
-        locationData[0].lon
-      }&start=${before.toISOString()}&end=${now.toISOString()}`,
-      {
-        headers: {
-          Authorization: process.env.REACT_APP_STORMGLASS_TOKEN
-        }
-      }
-    );
-    dispatch(actions.loadedData(last10daysWeather.hours));
+
+    const dayInMs = 24 * 60 * 60 * 1000;
+    const promises = [];
+    for (
+      let start = now - 10 * dayInMs;
+      start >= now - 370 * dayInMs;
+      start -= 10 * dayInMs
+    ) {
+      const end = start + 10 * dayInMs;
+      promises.push(
+        fetchAPI(
+          `https://api.stormglass.io/v1/weather/point?lat=${
+            locationData[0].lat
+          }&lng=${locationData[0].lon}&start=${new Date(
+            Math.max(start, now - 365 * dayInMs)
+          ).toISOString()}&end=${new Date(
+            end
+          ).toISOString()}&params=airTemperature,precipitation`,
+          {
+            headers: {
+              Authorization: process.env.REACT_APP_STORMGLASS_TOKEN
+            }
+          }
+        ).then(data => {
+          dispatch(actions.loadedData(data.hours));
+        })
+      );
+    }
+    await Promise.all(promises);
     dispatch(actions.finishedLoading());
   } catch (e) {
+    console.error(e);
     dispatch(actions.error());
   }
 };
