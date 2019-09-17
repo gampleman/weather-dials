@@ -32,6 +32,16 @@ const fetchAPI = async (...args) => {
   }
 };
 
+const stepBackThroughTime = (from, to, by, cb) => {
+  // round the end date up to avoid off-by-one error
+  const end = from - Math.ceil((from - to) / by) * by;
+  const results = [];
+  for (let start = from - by; start >= end; start -= by) {
+    results.push(cb(new Date(start), new Date(Math.max(start + by, to))));
+  }
+  return results;
+};
+
 export const render = location => async dispatch => {
   dispatch(actions.loading({ name: location }));
 
@@ -40,39 +50,35 @@ export const render = location => async dispatch => {
       `https://eu1.locationiq.com/v1/search.php?key=${process.env.REACT_APP_LOCATIONIQ_TOKEN}&q=${location}&format=json&addressdetails=1&limit=1`
     );
     dispatch(actions.loadedLocation(locationData[0]));
-    const now = new Date(Date.now());
+    const now = Date.now();
 
     const dayInMs = 24 * 60 * 60 * 1000;
-    const promises = [];
-    for (
-      let start = now - 10 * dayInMs;
-      start >= now - 370 * dayInMs;
-      start -= 10 * dayInMs
-    ) {
-      const end = start + 10 * dayInMs;
-      promises.push(
-        fetchAPI(
-          `https://api.stormglass.io/v1/weather/point?lat=${
-            locationData[0].lat
-          }&lng=${locationData[0].lon}&start=${new Date(
-            Math.max(start, now - 365 * dayInMs)
-          ).toISOString()}&end=${new Date(
-            end
-          ).toISOString()}&params=airTemperature,precipitation`,
-          {
-            headers: {
-              Authorization: process.env.REACT_APP_STORMGLASS_TOKEN
+
+    await Promise.all(
+      stepBackThroughTime(
+        now,
+        now - 365 * dayInMs,
+        10 * dayInMs,
+        (start, end) =>
+          fetchAPI(
+            `https://api.stormglass.io/v1/weather/point?lat=${
+              locationData[0].lat
+            }&lng=${
+              locationData[0].lon
+            }&start=${start.toISOString()}&end=${end.toISOString()}&params=airTemperature,precipitation`,
+            {
+              headers: {
+                Authorization: process.env.REACT_APP_STORMGLASS_TOKEN
+              }
             }
-          }
-        ).then(data => {
-          dispatch(actions.loadedData(data.hours));
-        })
-      );
-    }
-    await Promise.all(promises);
+          ).then(data => {
+            dispatch(actions.loadedData(data.hours));
+          })
+      )
+    );
+
     dispatch(actions.finishedLoading());
   } catch (e) {
-    console.error(e);
     dispatch(actions.error());
   }
 };

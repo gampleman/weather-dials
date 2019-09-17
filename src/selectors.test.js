@@ -60,4 +60,9 @@ describe("computeDailyAverages", () => {
       });
     });
   });
+
+  it("matches snapshot", () => {
+    const result = computeDailyAverages({ data: mockData });
+    expect(result).toMatchSnapshot();
+  });
 });
